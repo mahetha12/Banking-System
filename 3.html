@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>TrustWork</title>
+
+<style>
+body {
+  margin:0;
+  font-family:'Segoe UI';
+  height:100vh;
+  background:linear-gradient(135deg,#dbeafe,#fce7f3);
+}
+
+.page {
+  display:none;
+  height:100vh;
+  justify-content:center;
+  align-items:center;
+}
+
+.active { display:flex; }
+
+.container {
+  background:#ffffffdd;
+  padding:25px;
+  border-radius:15px;
+  width:400px;
+  text-align:center;
+}
+
+.fullscreen {
+  width:100%;
+  height:100%;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:linear-gradient(135deg,#e9d5ff,#d1fae5);
+}
+
+.form-box {
+  background:#ffffffdd;
+  padding:25px;
+  border-radius:15px;
+  width:450px;
+}
+
+input, textarea {
+  width:100%;
+  padding:8px;
+  margin-top:6px;
+  border-radius:6px;
+  border:1px solid #ccc;
+}
+
+button {
+  margin-top:10px;
+  padding:10px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  width:100%;
+}
+</style>
+</head>
+
+<body>
+
+<!-- HOME -->
+<div id="home" class="page active">
+  <div class="container">
+    <h3>Welcome to TrustWork</h3>
+    <h1>TrustWork</h1>
+    <button onclick="goPage('client')">Client</button>
+    <button onclick="goPage('freelancer')">Freelancer</button>
+  </div>
+</div>
+
+<!-- CLIENT ENTRY -->
+<div id="client" class="page">
+  <div class="container">
+    <h2>Hi Client 👋</h2>
+    <button onclick="goSignup('client')">Signup</button>
+    <button onclick="goLogin('client')">Login</button>
+  </div>
+</div>
+
+<!-- FREELANCER ENTRY -->
+<div id="freelancer" class="page">
+  <div class="container">
+    <h2>Hi Freelancer 👋</h2>
+    <button onclick="goSignup('freelancer')">Signup</button>
+    <button onclick="goLogin('freelancer')">Login</button>
+  </div>
+</div>
+
+<!-- SIGNUP -->
+<div id="signup" class="page">
+  <div class="container">
+    <h2>Signup</h2>
+    <input id="s_email" placeholder="Email">
+    <input id="s_pass" type="password" placeholder="Password">
+    <button onclick="signup()">Signup</button>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="login" class="page">
+  <div class="container">
+    <h2>Login</h2>
+    <input id="l_email" placeholder="Email">
+    <input id="l_pass" type="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+  </div>
+</div>
+
+<!-- CLIENT DASHBOARD -->
+<div id="clientHome" class="page">
+  <div class="fullscreen">
+    <div class="container">
+      <h2>Client Dashboard</h2>
+      <button onclick="goPage('clientProfileCreate')">Create Profile</button>
+      <button onclick="goPage('clientProfileView')">View Profile</button>
+    </div>
+  </div>
+</div>
+
+<!-- FREELANCER DASHBOARD -->
+<div id="freelancerHome" class="page">
+  <div class="fullscreen">
+    <div class="container">
+      <h2>Freelancer Dashboard</h2>
+      <button onclick="goPage('freelancerProfileCreate')">Create Profile</button>
+      <button onclick="goPage('freelancerProfileView')">View Profile</button>
+    </div>
+  </div>
+</div>
+
+<!-- CLIENT PROFILE CREATE -->
+<div id="clientProfileCreate" class="page">
+  <div class="fullscreen">
+    <div class="form-box">
+      <h2>Create Client Profile</h2>
+
+      <input id="c_name" placeholder="Name">
+      <input id="c_location" placeholder="Location">
+      <input id="c_company" placeholder="Company">
+      <textarea id="c_desc" placeholder="Description"></textarea>
+      <input id="c_contact" placeholder="Contact">
+
+      <button onclick="saveClientProfile()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- CLIENT PROFILE VIEW -->
+<div id="clientProfileView" class="page">
+  <div class="fullscreen">
+    <div class="form-box">
+      <h2 id="cv_name"></h2>
+      <p id="cv_location"></p>
+      <p id="cv_company"></p>
+      <p id="cv_desc"></p>
+
+      <button onclick="goPage('clientProfileEdit')">Edit</button>
+    </div>
+  </div>
+</div>
+
+<!-- CLIENT EDIT -->
+<div id="clientProfileEdit" class="page">
+  <div class="fullscreen">
+    <div class="form-box">
+      <h2>Edit Profile</h2>
+
+      <input id="ce_name">
+      <input id="ce_location">
+      <input id="ce_company">
+      <textarea id="ce_desc"></textarea>
+
+      <button onclick="updateClientProfile()">Update</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentRole="";
+
+/* NAV */
+function showPage(id){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+function goPage(page){
+  history.pushState({page}, "", "");
+  showPage(page);
+
+  if(page==="clientProfileView") loadClientProfile();
+}
+
+function goSignup(role){ currentRole=role; goPage("signup"); }
+function goLogin(role){ currentRole=role; goPage("login"); }
+
+/* BACK */
+window.onpopstate=e=>{
+  if(e.state) showPage(e.state.page);
+  else showPage("home");
+};
+
+/* SIGNUP */
+function signup(){
+  if(!s_email.value||!s_pass.value) return alert("Fill all");
+
+  localStorage.setItem("user_"+s_email.value,
+    JSON.stringify({email:s_email.value,pass:s_pass.value,role:currentRole})
+  );
+
+  alert("Signed in");
+
+  if(currentRole==="client") goPage("clientHome");
+  else goPage("freelancerHome");
+}
+
+/* LOGIN */
+function login(){
+  let data=localStorage.getItem("user_"+l_email.value);
+  if(!data) return alert("User not found");
+
+  let u=JSON.parse(data);
+
+  if(u.pass===l_pass.value){
+    alert("Login success");
+
+    if(u.role==="client") goPage("clientHome");
+    else goPage("freelancerHome");
+  } else alert("Wrong password");
+}
+
+/* CLIENT PROFILE */
+function saveClientProfile(){
+  let p={
+    name:c_name.value,
+    location:c_location.value,
+    company:c_company.value,
+    desc:c_desc.value,
+    contact:c_contact.value
+  };
+
+  if(!p.name||!p.location||!p.company||!p.desc||!p.contact)
+    return alert("Fill all details");
+
+  localStorage.setItem("clientProfile",JSON.stringify(p));
+  alert("Saved");
+  goPage("clientProfileView");
+}
+
+function loadClientProfile(){
+  let p=JSON.parse(localStorage.getItem("clientProfile"));
+  if(!p) return;
+
+  cv_name.innerText=p.name;
+  cv_location.innerText=p.location;
+  cv_company.innerText=p.company;
+  cv_desc.innerText=p.desc;
+}
+
+function updateClientProfile(){
+  let p={
+    name:ce_name.value,
+    location:ce_location.value,
+    company:ce_company.value,
+    desc:ce_desc.value
+  };
+
+  localStorage.setItem("clientProfile",JSON.stringify(p));
+  alert("Updated");
+  goPage("clientProfileView");
+}
+</script>
+
+</body>
+</html>

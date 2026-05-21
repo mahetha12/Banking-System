@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>TrustWork</title>
+
+<style>
+body {
+  margin:0;
+  font-family:'Segoe UI';
+  height:100vh;
+  background:linear-gradient(135deg,#dbeafe,#fce7f3);
+}
+
+.page {
+  display:none;
+  height:100vh;
+  justify-content:center;
+  align-items:center;
+}
+
+.active { display:flex; }
+
+.container {
+  background:#ffffffdd;
+  padding:25px;
+  border-radius:15px;
+  width:400px;
+  text-align:center;
+}
+
+.fullscreen {
+  width:100%;
+  height:100%;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:linear-gradient(135deg,#e9d5ff,#d1fae5);
+}
+
+.form-box {
+  background:#ffffffdd;
+  padding:25px;
+  border-radius:15px;
+  width:450px;
+}
+
+input, textarea {
+  width:100%;
+  padding:8px;
+  margin-top:6px;
+  border-radius:6px;
+  border:1px solid #ccc;
+}
+
+button {
+  margin-top:10px;
+  padding:10px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  width:100%;
+}
+
+.post {
+  background:white;
+  padding:10px;
+  margin-top:10px;
+  border-radius:8px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- HOME -->
+<div id="home" class="page active">
+  <div class="container">
+    <h3>Welcome to TrustWork</h3>
+    <h1>TrustWork</h1>
+    <button onclick="goPage('client')">Client</button>
+    <button onclick="goPage('freelancer')">Freelancer</button>
+  </div>
+</div>
+
+<!-- FREELANCER ENTRY -->
+<div id="freelancer" class="page">
+  <div class="container">
+    <h2>Hi Freelancer 👋</h2>
+    <button onclick="goSignup('freelancer')">Signup</button>
+    <button onclick="goLogin('freelancer')">Login</button>
+  </div>
+</div>
+
+<!-- CLIENT -->
+<div id="client" class="page">
+  <div class="container">
+    <h2>Hi Client 👋</h2>
+    <button onclick="goSignup('client')">Signup</button>
+    <button onclick="goLogin('client')">Login</button>
+  </div>
+</div>
+
+<!-- SIGNUP -->
+<div id="signup" class="page">
+  <div class="container">
+    <h2>Signup</h2>
+    <input id="s_email" placeholder="Email">
+    <input id="s_pass" type="password" placeholder="Password">
+    <button onclick="signup()">Signup</button>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="login" class="page">
+  <div class="container">
+    <h2>Login</h2>
+    <input id="l_email" placeholder="Email">
+    <input id="l_pass" type="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+  </div>
+</div>
+
+<!-- FREELANCER DASHBOARD -->
+<div id="freelancerHome" class="page">
+  <div class="fullscreen">
+    <div class="container">
+      <h2>Freelancer Dashboard</h2>
+      <button onclick="goPage('createProfile')">Create Profile</button>
+      <button onclick="goPage('profilePage')">View Profile</button>
+    </div>
+  </div>
+</div>
+
+<!-- CREATE PROFILE -->
+<div id="createProfile" class="page">
+  <div class="fullscreen">
+    <div class="form-box">
+      <h2>Create Profile</h2>
+
+      <input id="name" placeholder="Name">
+      <input id="location" placeholder="Location">
+      <input id="domain" placeholder="Domain">
+      <textarea id="bio" placeholder="Short Bio"></textarea>
+      <input type="file" id="photo">
+      <input type="file" id="resume">
+      <input id="contact" placeholder="Contact">
+
+      <button onclick="saveProfile()">Save Profile</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE PAGE -->
+<div id="profilePage" class="page">
+  <div class="fullscreen">
+    <div class="form-box">
+
+      <h2 id="p_name"></h2>
+      <p id="p_location"></p>
+      <p id="p_domain"></p>
+      <p id="p_bio"></p>
+
+      <button onclick="goPage('editProfile')">Edit Profile</button>
+
+      <h3>Add Post</h3>
+      <textarea id="postText" placeholder="Write something..."></textarea>
+      <input type="file" id="postImage">
+      <button onclick="addPost()">Post</button>
+
+      <h3>Posts</h3>
+      <div id="posts"></div>
+
+    </div>
+  </div>
+</div>
+
+<!-- EDIT PROFILE -->
+<div id="editProfile" class="page">
+  <div class="fullscreen">
+    <div class="form-box">
+      <h2>Edit Profile</h2>
+
+      <input id="e_name" placeholder="Name">
+      <input id="e_location" placeholder="Location">
+      <input id="e_domain" placeholder="Domain">
+      <textarea id="e_bio" placeholder="Bio"></textarea>
+
+      <button onclick="updateProfile()">Update</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentRole="";
+
+/* Navigation */
+function showPage(id){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+function goPage(page){
+  history.pushState({page}, "", "");
+  showPage(page);
+
+  if(page==="profilePage") loadProfile();
+}
+
+function goSignup(role){ currentRole=role; goPage("signup"); }
+function goLogin(role){ currentRole=role; goPage("login"); }
+
+/* Back */
+window.onpopstate=function(e){
+  if(e.state) showPage(e.state.page);
+  else showPage("home");
+};
+
+/* Signup */
+function signup(){
+  let email=s_email.value;
+  let pass=s_pass.value;
+
+  if(!email||!pass) return alert("Fill all fields");
+
+  localStorage.setItem("user_"+email,JSON.stringify({email,pass,role:currentRole}));
+
+  alert("Signed in ✅");
+
+  if(currentRole==="freelancer") goPage("freelancerHome");
+}
+
+/* Login */
+function login(){
+  let data=localStorage.getItem("user_"+l_email.value);
+
+  if(!data) return alert("User not found");
+
+  let user=JSON.parse(data);
+
+  if(user.pass===l_pass.value){
+    alert("Login success");
+    if(user.role==="freelancer") goPage("freelancerHome");
+  } else alert("Wrong password");
+}
+
+/* Save Profile */
+function saveProfile(){
+  let profile={
+    name:name.value,
+    location:location.value,
+    domain:domain.value,
+    bio:bio.value
+  };
+
+  if(!profile.name||!profile.location||!profile.domain||!profile.bio)
+    return alert("Fill all details");
+
+  localStorage.setItem("profile",JSON.stringify(profile));
+  localStorage.setItem("posts","[]");
+
+  alert("Profile Created 🎉");
+  goPage("profilePage");
+}
+
+/* Load Profile */
+function loadProfile(){
+  let p=JSON.parse(localStorage.getItem("profile"));
+
+  if(!p) return;
+
+  p_name.innerText=p.name;
+  p_location.innerText=p.location;
+  p_domain.innerText=p.domain;
+  p_bio.innerText=p.bio;
+
+  loadPosts();
+}
+
+/* Edit */
+function updateProfile(){
+  let p={
+    name:e_name.value,
+    location:e_location.value,
+    domain:e_domain.value,
+    bio:e_bio.value
+  };
+
+  localStorage.setItem("profile",JSON.stringify(p));
+  alert("Updated");
+  goPage("profilePage");
+}
+
+/* Posts */
+function addPost(){
+  let posts=JSON.parse(localStorage.getItem("posts"))||[];
+
+  posts.push(postText.value);
+
+  localStorage.setItem("posts",JSON.stringify(posts));
+
+  postText.value="";
+  loadPosts();
+}
+
+function loadPosts(){
+  let posts=JSON.parse(localStorage.getItem("posts"))||[];
+  let div=document.getElementById("posts");
+  div.innerHTML="";
+
+  posts.forEach(p=>{
+    div.innerHTML+=`<div class="post">${p}</div>`;
+  });
+}
+</script>
+
+</body>
+</html>

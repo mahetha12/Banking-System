@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>TrustWork</title>
+
+<style>
+body {
+  margin:0;
+  font-family:'Segoe UI';
+  height:100vh;
+  background:linear-gradient(135deg,#dbeafe,#fce7f3);
+}
+
+/* Page system */
+.page {
+  display:none;
+  height:100vh;
+  width:100%;
+  justify-content:center;
+  align-items:center;
+}
+
+.active {
+  display:flex;
+}
+
+/* Center container */
+.container {
+  background:#ffffffdd;
+  padding:30px;
+  border-radius:15px;
+  width:400px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.1);
+  text-align:center;
+}
+
+/* Fullscreen pages */
+.fullscreen {
+  width:100%;
+  height:100%;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:linear-gradient(135deg,#e9d5ff,#d1fae5);
+}
+
+/* Form styling */
+.form-box {
+  background:#ffffffdd;
+  padding:30px;
+  border-radius:15px;
+  width:450px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.1);
+}
+
+label {
+  display:block;
+  text-align:left;
+  margin-top:10px;
+  font-size:14px;
+}
+
+input, textarea {
+  width:100%;
+  padding:8px;
+  margin-top:5px;
+  border-radius:6px;
+  border:1px solid #ccc;
+}
+
+/* Buttons */
+button {
+  padding:10px;
+  margin-top:15px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  width:100%;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- HOME -->
+<div id="home" class="page active">
+  <div class="container">
+    <h3>Welcome to TrustWork</h3>
+    <h1>TrustWork</h1>
+    <p>"Where trust meets talent"</p>
+
+    <button onclick="goPage('client')">Client</button>
+    <button onclick="goPage('freelancer')">Freelancer</button>
+  </div>
+</div>
+
+<!-- CLIENT -->
+<div id="client" class="page">
+  <div class="container">
+    <h2>Hi Client 👋</h2>
+    <button onclick="goSignup('client')">Signup</button>
+    <button onclick="goLogin('client')">Login</button>
+  </div>
+</div>
+
+<!-- FREELANCER -->
+<div id="freelancer" class="page">
+  <div class="container">
+    <h2>Hi Freelancer 👋</h2>
+    <button onclick="goSignup('freelancer')">Signup</button>
+    <button onclick="goLogin('freelancer')">Login</button>
+  </div>
+</div>
+
+<!-- SIGNUP -->
+<div id="signup" class="page">
+  <div class="container">
+    <h2>Signup</h2>
+    <input id="s_email" placeholder="Email">
+    <input id="s_pass" type="password" placeholder="Password">
+    <button onclick="signup()">Signup</button>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="login" class="page">
+  <div class="container">
+    <h2>Login</h2>
+    <input id="l_email" placeholder="Email">
+    <input id="l_pass" type="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+  </div>
+</div>
+
+<!-- FREELANCER DASHBOARD -->
+<div id="freelancerHome" class="page">
+  <div class="fullscreen">
+    <div class="container">
+      <h2>Welcome Freelancer 🎉</h2>
+
+      <h3>Rules & Guidelines</h3>
+      <ul style="text-align:left;">
+        <li>Be honest in your profile</li>
+        <li>Deliver work on time</li>
+        <li>Maintain professionalism</li>
+        <li>Respect client needs</li>
+      </ul>
+
+      <button onclick="goPage('createProfile')">Create Profile</button>
+    </div>
+  </div>
+</div>
+
+<!-- CREATE PROFILE -->
+<div id="createProfile" class="page">
+  <div class="fullscreen">
+    <div class="form-box">
+
+      <h2>Create Profile</h2>
+
+      <label>Name:</label>
+      <input id="name">
+
+      <label>Location:</label>
+      <input id="location">
+
+      <label>Domain:</label>
+      <input id="domain">
+
+      <label>Short Bio:</label>
+      <textarea id="bio"></textarea>
+
+      <label>Upload Photo:</label>
+      <input type="file" id="photo">
+
+      <label>Upload Resume:</label>
+      <input type="file" id="resume">
+
+      <label>Contact Details:</label>
+      <input id="contact">
+
+      <button onclick="saveProfile()">Save Profile</button>
+
+    </div>
+  </div>
+</div>
+
+<script>
+let currentRole = "";
+
+/* Navigation */
+function showPage(id){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+function goPage(page){
+  history.pushState({page}, "", "");
+  showPage(page);
+}
+
+function goSignup(role){
+  currentRole = role;
+  goPage("signup");
+}
+
+function goLogin(role){
+  currentRole = role;
+  goPage("login");
+}
+
+/* Back button */
+window.onpopstate = function(event){
+  if(event.state){
+    showPage(event.state.page);
+  } else {
+    showPage("home");
+  }
+};
+
+/* Signup */
+function signup(){
+  let email = document.getElementById("s_email").value;
+  let pass = document.getElementById("s_pass").value;
+
+  if(!email || !pass){
+    alert("Fill all fields");
+    return;
+  }
+
+  localStorage.setItem("user_"+email, JSON.stringify({email, pass, role:currentRole}));
+
+  alert("Successfully signed in ✅");
+
+  if(currentRole==="freelancer"){
+    goPage("freelancerHome");
+  } else {
+    goPage("home");
+  }
+}
+
+/* Login */
+function login(){
+  let email = document.getElementById("l_email").value;
+  let pass = document.getElementById("l_pass").value;
+
+  let data = localStorage.getItem("user_"+email);
+
+  if(!data){
+    alert("User not found ❌");
+    return;
+  }
+
+  let user = JSON.parse(data);
+
+  if(user.pass === pass){
+    alert("Login successful ✅");
+
+    if(user.role==="freelancer"){
+      goPage("freelancerHome");
+    } else {
+      goPage("home");
+    }
+  } else {
+    alert("Wrong password ❌");
+  }
+}
+
+/* Save Profile with VALIDATION */
+function saveProfile(){
+  let name = document.getElementById("name").value;
+  let location = document.getElementById("location").value;
+  let domain = document.getElementById("domain").value;
+  let bio = document.getElementById("bio").value;
+  let photo = document.getElementById("photo").value;
+  let resume = document.getElementById("resume").value;
+  let contact = document.getElementById("contact").value;
+
+  if(!name || !location || !domain || !bio || !photo || !resume || !contact){
+    alert("Please fill all details ❗");
+    return;
+  }
+
+  alert("Profile created successfully 🎉");
+
+  goPage("freelancerHome");
+}
+</script>
+
+</body>
+</html>
